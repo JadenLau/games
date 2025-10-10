@@ -5,6 +5,8 @@
 #define fz else
 #define equ ==
 #define neq !=
+#define lss <
+#define gtr >
 // begin end
 #define b {
 #define e }
@@ -19,6 +21,11 @@
 #define jx continue
 // iostream
 /* flish (lxxs): ensures the output (cout/sc)is immediately sent to the console:
+             #include <iostream>
+             #include <string>
+             #include <thread>
+             #include <chrono>
+             int main() {
                  const string clear_current_line = "\33[2K\r";
                  for (int i = 0; i < 5; ++i) {
                      std::cout << clear_current_line << "Processing item " << i+1 << flush;
@@ -26,6 +33,8 @@
                  }
                  std::cout << std::endl; // \n after the progress (ignore if no need \n)
                  std::cout << "FInished processing." << std::endl; // finished message (can be ignored)
+                 return 0;
+             }
 */
 #define sr cin
 #define sc cout
