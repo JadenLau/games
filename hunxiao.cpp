@@ -5,6 +5,10 @@
 #define fz else
 #define equ ==
 #define neq !=
+// begin end
+#define b {
+#define e }
+#define rh ;
 // using namespace
 #define sy using
 #define mmgs namespace
@@ -14,17 +18,27 @@
 #define tcxh break
 #define jx continue
 // iostream
+/* flish (lxxs): ensures the output (cout/sc)is immediately sent to the console:
+                 const string clear_current_line = "\33[2K\r";
+                 for (int i = 0; i < 5; ++i) {
+                     std::cout << clear_current_line << "Processing item " << i+1 << flush;
+                     std::this_thread::sleep_for(std::chrono::milliseconds(500)); // time.sleep(0.500)
+                 }
+                 std::cout << std::endl; // \n after the progress (ignore if no need \n)
+                 std::cout << "FInished processing." << std::endl; // finished message (can be ignored)
+*/
 #define sr cin
 #define sc cout
+#define lxxs flush
 #define al <<
 #define ar >>
 #define gh endl
 // function
 #define zhs main
-#define js class
+#define ks class
 #define xk void
 #define db struct
-#define fgk private
+#define bgk private
 #define gk public
 #define fh return
 // value type / variable
@@ -50,6 +64,8 @@
 #define sj case
 #define mr default
 // -------------------------------------
+
+xk 
 
 sy mmkj std;
 zs zhs() {
