@@ -1,4 +1,4 @@
-import builtins
+222222import builtins
 
 class emulator():
     def __init__(self,a,b,c,d,x,y,m,pointer):
@@ -41,8 +41,12 @@ class emulator():
             elif type(val) is builtins.float: self.value = builtins.int(builtins.round(val))
             else: raise TypeError()
         def __str__(self): # im confused is that syntax oke, that int(x) does returns the correct value
-            return self.value
-
+            return {"type":self,"value":self.value}
     class float():
         def __init__(self,val):
-            
+            if type(val) is builtins.int: self.value = val
+            elif type(val) is builtins.float: self.value = val
+            elif type(val) is emulator.int: self.value = val.value
+            else: raise TypeError()
+        def __str__(self):
+            return {"type":self,"value":self.value}
