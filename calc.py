@@ -45,3 +45,4 @@ class emulator():
 
     class float():
         def __init__(self,val):
+            
