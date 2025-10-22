@@ -14,6 +14,7 @@ class DirectExecVM():
         self.lg = [0,0] # in non-vm, lg has 4 items which 2 and 3 are reversed for system use
         self.reserved = [0]*16
         self.lgstate = 0
+        self.opcodes = 0
         if verbose: print(f"{self.get_formatted_time()} L [from {str(parent)}] -> __init__: Loaded successfully.")
     def increase_pointer(self,verbose=False,parent=['unknown']):
         if verbose: print(f"{self.get_formatted_time()} L [from {str(parent)}] -> increase_pointer: Set self.pointer to {self.pointer+1}")
@@ -23,27 +24,36 @@ class DirectExecVM():
     def remove_comments(self,code,verbose=False,parent=['unknown']):
         if verbose: print(f"{self.get_formatted_time()} L [from {str(parent)}] -> remove_comments: Removing comments.")
         return re.sub(r'/\*.*?\*/','',code,flags=re.DOTALL)
-    def preprocess(self,code,verbose=False,parent=['unknown']):
+    def preprocess(self,code,verbose=False,parent=['unknown'],rm_comment=True):
         if verbose: print(f"{self.get_formatted_time()} L [from {str(parent)}] -> preprocess: Preparing...")
-        clean = self.remove_comments(code,verbose,parent=parent)
+        clean = code
+        if rm_comment: clean=self.remove_comments(clean,verbose,parent=parent)
         clean = clean.replace('\x20','')
         return clean
     def loadprog(self,bytecode,verbose=False,parent=['unknown']):
         # self.prog = bytecode.split()
         self.prog = list(str(bytecode))
         if verbose: print(f"{self.get_formatted_time()} L [from {str(parent)}] -> loadprog: Loaded program to self.prog")
-    def execute(self,verbose=False,parent=['unknown']):
+    def execute(self,verbose=False,parent=['unknown'],max=10**10,force_ping=0):
         increase_pointer = self.increase_pointer
         if verbose: print(f"{self.get_formatted_time()} L [from {str(parent)}] -> execute:","Set pointer to 0")
         self.pointer = 0
         self.state = 0
+        self.force_ping = force_ping
+        self.ping = 0
+        self.opcodes = 0
         increase_pointer = self.increase_pointer
         while True:
             # time.sleep(0.01)
             # input("")
             self.lgstate -= 1
+            self.opcodes += 1
+            time.sleep(self.ping if self.ping >= self.force_ping else self.force_ping)
             if self.pointer >= len(self.prog):
                 if verbose: print(f"\033[93m{self.get_formatted_time()} W [from {str(parent)}] -> execute: Reached end of program without exit opcode, exiting\033[0m")
+                break
+            elif self.opcodes >> max:
+                if verbose: print(f"\033[93m{self.get_formatted_time()} W [from {str(parent)}] -> execute: reached maximum opcode limit ({max}), exiting\033[0m")
                 break
             if verbose:
                 # i want to use gray color for this "verbose" type log
@@ -132,9 +142,9 @@ class DirectExecVM():
                     print(f'\033[90m{self.get_formatted_time()} V [from {str(parent)}] -> execute: lg equ "{self.lg[0]}" "{self.lg[1]}" is {lgpass}')
                     if lgpass:
                         self.state = 8
-                        increase_pointer()
                     else:
                         self.lgstate = 1
+                    increase_pointer()
                     continue
                 elif self.prog[self.pointer] == '+':
                     # its short, no state needed

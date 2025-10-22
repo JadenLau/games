@@ -8,3 +8,7 @@ sel = input("Select program ID: ") # i will select 0
 core = prog[int(sel)]
 from compiler import DirectExecVM; vm=DirectExecVM(verbose=True); vm.loadprog(bytecode=vm.preprocess(verbose=True,code=core),verbose=True)
 vm.execute(verbose=True)
+
+# (x+2)(x+3)
+# = (x2+5x+6)
+# 2 5 6
