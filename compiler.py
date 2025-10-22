@@ -3,6 +3,7 @@ import re
 from datetime import datetime
 import sys
 import time
+import os
 
 class DirectExecVM():
     def __init__(self,parent=['unknown'],verbose=False):

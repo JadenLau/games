@@ -88,10 +88,10 @@ while True:
         except Exception as e:
             print(f"\033[91mUnexpected error: {type(e).__name__}: {e}\033[0m")
     else:
-        total += x
         vm.loadprog(vm.preprocess(x,parent='debugger',verbose=False),verbose=False,parent='debugger')
         try:
             vm.execute(parent='debugger',verbose=True)
+            total += x
         except SystemExit as e:
             print(f"\033[91mFailure ({e.code})\033[0m")
         except Exception as e:
