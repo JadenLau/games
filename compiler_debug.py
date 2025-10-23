@@ -23,7 +23,7 @@ class op():
 config = config()
 while True:
     x = input(f'debugger> ')
-    # === MULTI CHAR CMDS
+    # === MULTI CHAR CMDS ===
     if x[0:5] == config.prefix+'set ':
         try: exec('config.'+x[5:])
         except SystemExit as e:
@@ -31,7 +31,7 @@ while True:
         except Exception as e:
             print(f"\033[91mUnexpected error: {type(e).__name__}: {e}\033[0m")
         continue
-    # === SINGLE CHAR CMDS
+    # === SINGLE CHAR CMDS ===
     elif x[0:2] == config.prefix+'d':
         try: x=int(x[2:3])
         except:
