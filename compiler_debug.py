@@ -1,3 +1,4 @@
+from sympy import Q
 from compiler import DirectExecVM
 from os import system
 vm = DirectExecVM(verbose=True,parent='debugger')
@@ -6,23 +7,25 @@ class config():
     def __init__(self):
         self.prefix = '.'
         self.verbose = True
-        self.ping = 100 # ms
+        self.command = 'debugger'
+        self.inputprefix = '>'
+        self.ping = 10 # ms
         self.rmcomment = True
 class op():
     def runprog(verbose=True,adjust_total=False,total_in=''):
-        vm.loadprog(vm.preprocess(total_in,rm_comment=config.rmcomment,parent='debugger',verbose=verbose),verbose=verbose,parent='debugger')
+        vm.loadprog(bytecode=vm.preprocess(total_in,rm_comment=config.rmcomment,parent='debugger',verbose=verbose),verbose=verbose,parent='debugger')
         if adjust_total:
             global total
             total += total_in
         try:
-            vm.execute(parent='debugger',verbose=verbose)
+            vm.execute(parent='debugger',verbose=verbose,force_ping=config.ping)
         except SystemExit as e:
             print(f"\033[91mFailure ({e.code})\033[0m")
         except Exception as e:
             print(f"\033[91mUnexpected error: {type(e).__name__}: {e}\033[0m")
 config = config()
 while True:
-    x = input(f'debugger> ')
+    x = input(f'{config.command}{config.inputprefix} ')
     # === MULTI CHAR CMDS ===
     if x[0:5] == config.prefix+'set ':
         try: exec('config.'+x[5:])
@@ -31,6 +34,57 @@ while True:
         except Exception as e:
             print(f"\033[91mUnexpected error: {type(e).__name__}: {e}\033[0m")
         continue
+    elif x[0:9] == config.prefix+'runfile ':
+        try: op.runprog(verbose=config.verbose,adjust_total=True,total_in=open(x[9:],'r').read())
+        except SystemExit as e:
+            print(f"\033[91mFailure ({e.code})\033[0m")
+        except Exception as e:
+            print(f"\033[91mUnexpected error: {type(e).__name__}: {e}\033[0m")
+    elif x[0:5] == config.prefix+'cat ':
+        # we have to make it colorful
+        # light colors:
+        x91 = '\033[91m' # red
+        x92 = '\033[92m' # green
+        x93 = '\033[93m' # yellow
+        x94 = '\033[94m' # blue
+        x95 = '\033[95m' # purple
+        x96 = '\033[96m' # cyan
+        x97 = '\033[97m' # white
+        x90 = '\033[90m' # gray
+        # first of all, read
+        try: f = open(x[5:],'r').read()
+        except Exception as e:
+            print(f"\033[91mException: {type(e).__name__}: {e}\033[0m")
+            continue
+        # we will color up syntaxs, for characters one by one
+        pointer = 0
+        state = 0
+        out = ''
+        while True:
+            if pointer >= len(f): break
+            if state == 0:
+                if f[pointer] == '1': # init everything
+                    out += x91+f[pointer]
+                    pointer += 1
+                    continue
+                elif f[pointer] == '2': # clear db
+                    out += x91+f[pointer]
+                    pointer += 1
+                    continue
+                elif f[pointer] == '3': # mov
+                    out += x91+f[pointer]
+                    pointer += 1
+                    state = 1
+                    continue
+                pointer += 1
+                continue
+            elif state == 1:
+                if f[pointer] == 'a': # mov pm 0 type is auto
+                    # string color light blue (autotype default is str)
+                    out += x94+f[pointer]
+            pointer += 1
+            state = 0
+            continue
     # === SINGLE CHAR CMDS ===
     elif x[0:2] == config.prefix+'d':
         try: x=int(x[2:3])
@@ -53,33 +107,34 @@ while True:
             continue
         elif x[2:3] == 'd':
             try:
-                p=int(x[3:4])-1
-                if not (0 <= p <= 6): raise Exception()
+                p=int(x[3:4])
+                if not (1 <= p <= 7): raise Exception()
             except:
                 print(f'\033[94mdebugger cmd wd missing/invalid pm(s)\033[0m') # pm: parameters
                 continue
             val = x[5:]
             try:
-                vm.db[p] = float(val)
-                print(f'\033[94mmov db[{p}] (c{p+1})<- float {float(val)}\033[0m')
+                vm.db[p-1] = float(val)
+                print(f'\033[94mmov db[{p-1}] (c{p})<- float {float(val)}\033[0m')
             except:
-                vm.db[p] = val
-                print(f'\033[94mmov db[{p}] (c{p+1})<- str/auto {val}\033[0m')
+                vm.db[p-1] = val
+                print(f'\033[94mmov db[{p-1}] (c{p})<- str/auto {val}\033[0m')
             continue
         elif x[2:3] == 't':
             try:
-                p=int(x[3:5])-1
-                if not (0 <= p <= 98): raise Exception()
+                p=int(x[3:5])
+                if not (1 <= p <= 99): raise Exception()
             except:
                 print(f'\033[94mebugger cmd wt missing/invalid pm(s)\033[0m')
                 continue
-            val = x[6:]
+            if x[4] == ',' or x[4] == '\x20': val = x[5:]
+            else: val = x[6:]
             try:
-                vm.tmp[p] = float(val)
-                print(f'\033[94mmov tmp[{p}] (t{p+1})<- float {float(val)}\033[0m')
+                vm.tmp[p-1] = float(val)
+                print(f'\033[94mmov tmp[{p-1}] (t{p})<- float {float(val)}\033[0m')
             except:
-                vm.tmp[p] = val
-                print(f'\033[94mmov tmp[{p}] (t{p+1})<- str/auto {val}\033[0m')
+                vm.tmp[p-1] = val
+                print(f'\033[94mmov tmp[{p-1}] (t{p})<- str/auto {val}\033[0m')
             continue
         elif x[2:3] == 'l':
             print(f'\033[94mdebugger cmd wl incompleted lg feature\033[0m')

@@ -49,7 +49,8 @@ class DirectExecVM():
             # input("")
             self.lgstate -= 1
             self.opcodes += 1
-            time.sleep(self.ping if self.ping >= self.force_ping else self.force_ping)
+            # for the ping, we use max of force_ping and self.ping
+            time.sleep((self.ping if self.force_ping < self.ping else self.force_ping)/1000)
             if self.pointer >= len(self.prog):
                 if verbose: print(f"\033[93m{self.get_formatted_time()} W [from {str(parent)}] -> execute: Reached end of program without exit opcode, exiting\033[0m")
                 break
