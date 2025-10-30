@@ -80,6 +80,71 @@ class DisplayTests(unittest.TestCase):
         with self.assertRaises(self.main.ContainerNotFoundError):
             d.render()
 
+    def test_container_at_5_5_to_15_10(self):
+        """Test container at coordinates (5,5) to (15,10) as requested"""
+        # Override terminal size for this test to accommodate the container
+        os.get_terminal_size = lambda: types.SimpleNamespace(columns=20, lines=15)
+        d = self.main.Display()
+        
+        # Create container at (5,5) to (15,10) as specified by user
+        d.container(5, 5, 15, 10, "test_box")
+        
+        # Test text at origin of container (should appear at 5,5)
+        d.text("A", 0, 0, container=["test_box"])
+        d.render()
+        self.assertEqual(d.last_terminal[5][5], "A")
+        
+    def test_container_at_5_5_to_15_10_with_offset(self):
+        """Test text rendering with offset inside container at (5,5) to (15,10)"""
+        # Override terminal size for this test to accommodate the container
+        os.get_terminal_size = lambda: types.SimpleNamespace(columns=20, lines=15)
+        d = self.main.Display()
+        d.container(5, 5, 15, 10, "test_box")
+        
+        # Test text at offset (2,1) within container (should appear at 5+2=7, 5+1=6)
+        d.text("Test", 2, 1, container=["test_box"])
+        d.render()
+        self.assertEqual(d.last_terminal[6][7], "T")
+        self.assertEqual(d.last_terminal[6][8], "e")
+        self.assertEqual(d.last_terminal[6][9], "s")
+        self.assertEqual(d.last_terminal[6][10], "t")
+        
+    def test_container_at_5_5_to_15_10_clipping(self):
+        """Test that text is clipped at container boundaries (5,5) to (15,10)"""
+        # Override terminal size for this test to accommodate the container
+        os.get_terminal_size = lambda: types.SimpleNamespace(columns=20, lines=15)
+        d = self.main.Display()
+        d.container(5, 5, 15, 10, "test_box")
+        
+        # Place text at the right edge of container
+        # Container right edge is at x=15, so positions 5-15 are valid (11 chars wide)
+        # Text starting at x=6 should fit "0123456789" (10 chars) ending at x=15
+        # The 11th character 'X' should be clipped
+        d.text("0123456789X", 6, 0, container=["test_box"])
+        d.render()
+        self.assertEqual(d.last_terminal[5][11], "0")  # 5+6=11
+        self.assertEqual(d.last_terminal[5][15], "4")  # Last visible char at x=15
+        # Verify character at x=16 is not 'X' (should remain empty/space)
+        self.assertEqual(d.last_terminal[5][16], " ")
+        
+    def test_container_at_5_5_to_15_10_vertical_bounds(self):
+        """Test that container at (5,5) to (15,10) properly handles vertical bounds"""
+        # Override terminal size for this test to accommodate the container
+        os.get_terminal_size = lambda: types.SimpleNamespace(columns=20, lines=15)
+        d = self.main.Display()
+        d.container(5, 5, 15, 10, "test_box")
+        
+        # Container spans from y=5 to y=10 (6 lines: 5,6,7,8,9,10)
+        # Place text at bottom of container (y=5 within container maps to screen y=10)
+        d.text("Bottom", 0, 5, container=["test_box"])
+        d.render()
+        self.assertEqual(d.last_terminal[10][5], "B")
+        self.assertEqual(d.last_terminal[10][6], "o")
+        self.assertEqual(d.last_terminal[10][7], "t")
+        self.assertEqual(d.last_terminal[10][8], "t")
+        self.assertEqual(d.last_terminal[10][9], "o")
+        self.assertEqual(d.last_terminal[10][10], "m")
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
