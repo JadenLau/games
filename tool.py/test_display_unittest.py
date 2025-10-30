@@ -116,15 +116,15 @@ class DisplayTests(unittest.TestCase):
         d = self.main.Display()
         d.container(5, 5, 15, 10, "test_box")
         
-        # Place text at the right edge of container
-        # Container right edge is at x=15, so positions 5-15 are valid (11 chars wide)
-        # Text starting at x=6 should fit "0123456789" (10 chars) ending at x=15
-        # The 11th character 'X' should be clipped
+        # Place text at container position x=6
+        # Container spans screen x=5 to x=15 (11 positions total: 5,6,7,8,9,10,11,12,13,14,15)
+        # Text at container x=6 maps to screen positions 11-15 (5 chars fit: '01234')
+        # Characters '56789X' are clipped as they exceed the container boundary
         d.text("0123456789X", 6, 0, container=["test_box"])
         d.render()
-        self.assertEqual(d.last_terminal[5][11], "0")  # 5+6=11
-        self.assertEqual(d.last_terminal[5][15], "4")  # Last visible char at x=15
-        # Verify character at x=16 is not 'X' (should remain empty/space)
+        self.assertEqual(d.last_terminal[5][11], "0")  # container x=6 -> screen x=11
+        self.assertEqual(d.last_terminal[5][15], "4")  # container x=10 -> screen x=15 (rightmost)
+        # Verify clipped characters don't appear beyond container boundary
         self.assertEqual(d.last_terminal[5][16], " ")
         
     def test_container_at_5_5_to_15_10_vertical_bounds(self):
