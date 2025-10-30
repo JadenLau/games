@@ -5,9 +5,9 @@ import sys
 import time
 import os
 
-
 class DirectExecVM():
     def __init__(self,parent=['unknown'],verbose=False):
+        self.version = 1
         self.db = [0,0,0,0,0,0,0]
         self.tmp = [0]*100
         self.pointer = 0
@@ -20,7 +20,7 @@ class DirectExecVM():
     def increase_pointer(self,verbose=False,parent=['unknown']):
         if verbose: print(f"{self.get_formatted_time()} L [from {str(parent)}] -> increase_pointer: Set self.pointer to {self.pointer+1}")
         self.pointer += 1
-    def get_formatted_time(parent=['unknown']):
+    def get_formatted_time(self):
         return datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")
     def remove_comments(self,code,verbose=False,parent=['unknown']):
         if verbose: print(f"{self.get_formatted_time()} L [from {str(parent)}] -> remove_comments: Removing comments.")
@@ -29,7 +29,7 @@ class DirectExecVM():
         if verbose: print(f"{self.get_formatted_time()} L [from {str(parent)}] -> preprocess: Preparing...")
         clean = code
         if rm_comment: clean=self.remove_comments(clean,verbose,parent=parent)
-        clean = clean.replace('\x20','')
+        # clean = clean.replace('\x20','')
         return clean
     def loadprog(self,bytecode,verbose=False,parent=['unknown']):
         # self.prog = bytecode.split()
@@ -110,7 +110,7 @@ class DirectExecVM():
                     continue
                 elif self.prog[self.pointer] == 'S': # exit
                     if verbose: print(f"\033[92m{self.get_formatted_time()} L [from {str(parent)}] -> execute: safe exit\033[0m")
-                    break
+                    return 0 # break
                 elif self.prog[self.pointer] == 'c': # start of variable operation(s)
                     self.state = 5
                     increase_pointer()
@@ -439,7 +439,11 @@ class DirectExecVM():
                     self.reserved[0] = int(self.prog[self.pointer]) - 1
                     increase_pointer()
                     if self.pointer < len(self.prog) and self.prog[self.pointer] == '?':
-                        self.reserved[1] = float(input(f"Value for c{self.reserved[0]+1} \033[90m(Default: {self.db[self.reserved[0]]})\033[0m: "))
+                        try:
+                            self.reserved[1] = float(input(f"Value for c{self.reserved[0]+1} \033[90m(Default: {self.db[self.reserved[0]]})\033[0m: "))
+                        except:
+                            sys.exit(13)
+                        
                         self.db[self.reserved[0]] = self.reserved[1]
                         if verbose: print(f"\033[90m{self.get_formatted_time()} V [from {str(parent)}] -> execute: assign input \"\033[1;90m{self.reserved[1]}\033[0;90m\" to register db {hex(self.reserved[0])}")
                         increase_pointer()
@@ -845,3 +849,4 @@ class DirectExecVM():
                 print(f"\033[91m{self.get_formatted_time()} E [from {str(parent)}] -> execute: CRITICAL: Invalid state {hex(self.state)}\033[0m")
                 sys.exit(10)
                 continue
+# <program><config>prog.name="addition";prog.id=0</config><data>c1? c2? mc1p01 mc2p02 + n03pc1 qc1 S</data></program>

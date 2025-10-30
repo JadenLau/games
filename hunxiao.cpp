@@ -36,12 +36,13 @@
                  return 0;
              }
 */
-#define sr cin
-#define sc cout
+
+#define sr std::cin
+#define sc std::cout
 #define lxxs flush
 #define al <<
 #define ar >>
-#define gh endl
+#define gh std::endl
 // function
 #define zhs main
 #define ks class
@@ -74,9 +75,9 @@
 #define mr default
 // -------------------------------------
 
-xk 
+// xk mmk
 
-sy mmkj std;
+sy mmgs std;
 zs zhs() {
     sc al "Hello, World!" al gh;
     fh 0;
